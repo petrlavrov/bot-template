@@ -13,25 +13,31 @@ import middlewares
 import config as cnf
 import setup
 
-dp = Dispatcher()
-dp.include_router(botsource.router)
+class App:
+  def __init__(self):
+    
 
-logger = logging.getLogger(__name__)
+    self.dp = Dispatcher()
+    self.dp.include_router(botsource.router)
 
-middlewares.db.setup(dp)
-middlewares.referer.setup(dp)
-middlewares.session.setup(dp)
-middlewares.i18n.setup(dp)
+    self.logger = logging.getLogger(__name__)
 
-# This function is called when bots are started (setup.start_bot)
-# Bots won't start until this function's execution is over
-dp.startup.register(setup.main_startup)
+    middlewares.db.setup(self.dp)
+    middlewares.referer.setup(self.dp)
+    middlewares.session.setup(self.dp)
+    middlewares.i18n.setup(self.dp)
 
-dp.shutdown.register(setup.main_shutdown)
+    # This function is called when bots are started (setup.start_bot)
+    # Bots won't start until this function's execution is over
+    self.dp.startup.register(setup.main_startup)
 
-app = FastAPI()
-app.include_router(api.router)
+    self.dp.shutdown.register(setup.main_shutdown)
 
-# Initialize Bot instance with an default parse mode which will be passed to all API calls
-bot = Bot(cnf.TOKEN, parse_mode="HTML")
-setup.register_main_bot(dp, app, bot)
+    self.app = FastAPI()
+    self.app.include_router(self.api.router)
+
+    # Initialize Bot instance with an default parse mode which will be passed to all API calls
+    self.bot = Bot(cnf.TOKEN, parse_mode="HTML")
+    setup.register_main_bot(self.dp, self.app, self.bot)
+    
+app = App()
